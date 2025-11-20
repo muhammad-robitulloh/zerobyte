@@ -12,7 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const globeRadius = 5; // Define a radius for the globe
 
-    camera.position.set(0, 7, globeRadius * 2.5); // Adjusted camera position: higher Y, slightly closer Z
+    // Adjusted camera position for Tron-style grid view
+    camera.position.set(0, 10, 20); // Higher Y, further Z
     camera.lookAt(0, 0, 0);
 
     // Function to convert lat/lon to 3D Cartesian coordinates
@@ -31,54 +32,37 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadWorldMap() {
         try {
             const response = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
-            const topojson = await response.json();
+            const topojsonRes = await response.json();
 
-            // Simplified TopoJSON parsing (manual feature extraction from arcs)
-            const land = topojson.objects.land;
-            const arcs = topojson.arcs;
+            // Use topojson.feature to convert to GeoJSON features
+            const countries = topojson.feature(topojsonRes, topojsonRes.objects.land);
 
             const mapPoints = [];
-
-            // A helper to decode TopoJSON arcs
-            // This is a simplified version; a full topojson-client library would be more robust.
-            function decodeArc(arc, scale, translate) {
-                const coordinates = [];
-                let x = 0, y = 0;
-                for (let i = 0; i < arc.length; i++) {
-                    const dx = arc[i][0];
-                    const dy = arc[i][1];
-                    x += dx;
-                    y += dy;
-                    coordinates.push([x * scale[0] + translate[0], y * scale[1] + translate[1]]);
-                }
-                return coordinates;
-            }
-
-            land.geometries.forEach(geometry => {
-                geometry.arcs.forEach(arcIndexes => {
-                    arcIndexes.forEach(arcIndex => {
-                        const actualArc = arcs[arcIndex < 0 ? ~arcIndex : arcIndex];
-                        const coordinates = decodeArc(
-                            arcIndex < 0 ? [...actualArc].reverse() : actualArc,
-                            topojson.transform.scale,
-                            topojson.transform.translate
-                        );
-
-                        coordinates.forEach(coord => {
+            countries.features.forEach(feature => {
+                if (feature.geometry.type === 'Polygon') {
+                    feature.geometry.coordinates.forEach(polygon => {
+                        polygon.forEach(coord => {
                             mapPoints.push(latLonToCartesian(coord[1], coord[0], globeRadius));
                         });
                     });
-                });
+                } else if (feature.geometry.type === 'MultiPolygon') {
+                    feature.geometry.coordinates.forEach(multiPolygon => {
+                        multiPolygon.forEach(polygon => {
+                            polygon.forEach(coord => {
+                                mapPoints.push(latLonToCartesian(coord[1], coord[0], globeRadius));
+                            });
+                        });
+                    });
+                }
             });
-
 
             // Create BufferGeometry for the world map points
             const geometry = new THREE.BufferGeometry().setFromPoints(mapPoints);
 
             // Create PointsMaterial for glowing dots
             const material = new THREE.PointsMaterial({
-                color: new THREE.Color(0x4FC3F7), // Secondary color from CSS
-                size: 0.08, // Slightly increased dot size
+                color: new THREE.Color(0x00FFFF), // Cyan, more vibrant
+                size: 0.07, // Slightly increased dot size
                 transparent: true,
                 blending: THREE.AdditiveBlending // For glowing effect
             });
@@ -88,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Add rotation to the world map
             gsap.to(worldMap.rotation, {
-                duration: 400, // Slowed down rotation
+                duration: 600, // Slowed down rotation further
                 y: Math.PI * 2,
                 repeat: -1,
                 ease: "none"
@@ -99,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Global Network Visualization
+    // Global Network Visualization (remains largely the same)
     const cities = [
         { name: "London", lat: 51.5, lon: -0.1 },
         { name: "New York", lat: 40.7, lon: -74.0 },
@@ -124,18 +108,6 @@ document.addEventListener('DOMContentLoaded', () => {
         scene.add(cityMesh);
     });
 
-    // Create connections (simplified for demonstration)
-    const links = [
-        ["London", "New York"],
-        ["New York", "Rio de Janeiro"],
-        ["London", "Dubai"],
-        ["Dubai", "Singapore"],
-        ["Singapore", "Sydney"],
-        ["Sydney", "Tokyo"],
-        ["Tokyo", "New York"],
-        ["Cape Town", "London"]
-    ];
-
     const linkVertexShader = `
         uniform float uTime;
         attribute float lineDistance;
@@ -157,6 +129,17 @@ document.addEventListener('DOMContentLoaded', () => {
             gl_FragColor = vec4(color, alpha);
         }
     `;
+
+    const links = [
+        ["London", "New York"],
+        ["New York", "Rio de Janeiro"],
+        ["London", "Dubai"],
+        ["Dubai", "Singapore"],
+        ["Singapore", "Sydney"],
+        ["Sydney", "Tokyo"],
+        ["Tokyo", "New York"],
+        ["Cape Town", "London"]
+    ];
 
     links.forEach(link => {
         const startNode = nodes.find(node => node.name === link[0]);
@@ -206,69 +189,64 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-
-    // Grid Shader Material (existing code)
-    const vertexShader = `
-        uniform float uTime;
+    // Tron-style Grid Implementation
+    const tronGridVertexShader = `
         varying vec2 vUv;
-        varying vec3 vPosition;
-
         void main() {
             vUv = uv;
-            vec3 newPosition = position;
-
-            // Simple wave effect for the grid (reduced multipliers for less "strangeness")
-            newPosition.z += sin(newPosition.x * 0.5 + uTime * 0.5) * 0.2; // Was 0.5
-            newPosition.y += cos(newPosition.z * 0.5 + uTime * 0.5) * 0.2; // Was 0.5
-
-            vPosition = newPosition;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
     `;
 
-    const fragmentShader = `
+    const tronGridFragmentShader = `
         uniform float uTime;
         uniform vec3 uColor;
+        uniform float uGridSize; // Size of the grid cells
+        uniform float uGridWidth; // Thickness of the grid lines
+        uniform float uScrollSpeed; // How fast the grid scrolls
+
         varying vec2 vUv;
-        varying vec3 vPosition;
 
         void main() {
-            float strength = 0.0;
+            vec2 uv = vUv;
+            uv.y -= uTime * uScrollSpeed; // Scroll effect
+
+            vec2 grid = fract(uv * uGridSize); // Repeating grid pattern
+
+            float lineX = smoothstep(0.0, uGridWidth, grid.x) - smoothstep(uGridWidth, 1.0, grid.x);
+            float lineY = smoothstep(0.0, uGridWidth, grid.y) - smoothstep(uGridWidth, 1.0, grid.y);
             
-            // Grid lines on XZ plane
-            float gridX = smoothstep(0.05, 0.1, abs(sin(vPosition.x * 3.0)));
-            float gridZ = smoothstep(0.05, 0.1, abs(sin(vPosition.z * 3.0)));
-            strength = max(gridX, gridZ);
+            // Glowing effect
+            float glow = max(lineX, lineY);
+            glow = pow(glow, 0.5); // Soften the glow
 
-            // Add some animation to the grid lines
-            strength *= sin(uTime * 0.1 + vPosition.x * 0.1 + vPosition.z * 0.1) * 0.5 + 0.5;
-
-            // Fade out towards the edges
-            float dist = length(vUv - 0.5) * 2.0; // 0 at center, 1 at edges
-            strength *= (1.0 - dist * 0.8); // Fade out
-
-            gl_FragColor = vec4(uColor, strength);
+            // Color and fade based on glow
+            gl_FragColor = vec4(uColor * glow, glow);
         }
     `;
 
-    const uniforms = {
+    const tronGridUniforms = {
         uTime: { value: 0.0 },
-        uColor: { value: new THREE.Color(0xA259FF) } // Primary color from CSS
+        uColor: { value: new THREE.Color(0x00FFFF) }, // Cyan for Tron lines
+        uGridSize: { value: 50.0 }, // How many grid lines
+        uGridWidth: { value: 0.02 }, // Thickness of grid lines
+        uScrollSpeed: { value: 0.1 } // Speed of scrolling
     };
 
-    const geometry = new THREE.PlaneGeometry(100, 100, 100, 100); // Large plane, many segments for detailed waves
-    const material = new THREE.ShaderMaterial({
-        vertexShader,
-        fragmentShader,
-        uniforms,
+    const tronGridGeometry = new THREE.PlaneGeometry(200, 200, 1, 1); // Large flat plane
+    const tronGridMaterial = new THREE.ShaderMaterial({
+        vertexShader: tronGridVertexShader,
+        fragmentShader: tronGridFragmentShader,
+        uniforms: tronGridUniforms,
         transparent: true,
+        blending: THREE.AdditiveBlending,
         side: THREE.DoubleSide
     });
 
-    const grid = new THREE.Mesh(geometry, material);
-    grid.rotation.x = Math.PI / 2; // Rotate to lie on the XZ plane
-    grid.position.y = -2; // Move grid down slightly
-    scene.add(grid);
+    const tronGrid = new THREE.Mesh(tronGridGeometry, tronGridMaterial);
+    tronGrid.rotation.x = -Math.PI / 2; // Lay flat on XZ plane
+    tronGrid.position.y = -globeRadius - 0.5; // Place below the globe
+    scene.add(tronGrid);
 
     // Call loadWorldMap
     loadWorldMap();
@@ -279,12 +257,15 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(animate);
 
         const elapsedTime = clock.getElapsedTime();
-        uniforms.uTime.value = elapsedTime;
+        
+        // Update uTime for all shaders
+        tronGridUniforms.uTime.value = elapsedTime;
 
-        // Update uTime for link shaders
         scene.children.forEach(child => {
-            if (child.material && child.material.uniforms && child.material.uniforms.uTime) {
-                child.material.uniforms.uTime.value = elapsedTime;
+            if (child.material && child.material.uniforms) {
+                if (child.material.uniforms.uTime) {
+                    child.material.uniforms.uTime.value = elapsedTime;
+                }
             }
         });
 
@@ -298,14 +279,4 @@ document.addEventListener('DOMContentLoaded', () => {
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
-
-    // Optional: GSAP animation for camera (example)
-    // gsap.to(camera.position, {
-    //     duration: 20,
-    //     y: 10,
-    //     z: 20,
-    //     repeat: -1,
-    //     yoyo: true,
-    //     ease: "power1.inOut"
-    // });
 });
