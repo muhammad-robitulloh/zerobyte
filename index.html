@@ -11,6 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <canvas id="three-bg"></canvas> <!-- Three.js canvas for background -->
+
     <header class="floating-header">
         zerobyte.sh — where the void computes itself.
     </header>
@@ -21,6 +23,15 @@
             <p class="subtitle">Minimal presence. Maximum intent.</p>
             <div class="typing-container">
                 <span id="typing-text"></span><span class="cursor"></span>
+            </div>
+        </section>
+
+        <section id="ai-chat">
+            <h2>Arcana AI Interface</h2>
+            <div class="chat-container">
+                <div id="chat-output"></div>
+                <input type="text" id="ai-input" placeholder="Ask Arcana AI anything..." />
+                <button id="ai-send-btn">Send</button>
             </div>
         </section>
 
@@ -55,6 +66,9 @@
         </section>
     </main>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
     <script src="script.js"></script>
+    <script src="three_animation.js"></script> <!-- New script for Three.js animation -->
 </body>
 </html>
