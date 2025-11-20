@@ -8,10 +8,22 @@
     --font-mono: 'JetBrains Mono', monospace;
 }
 
+:root {
+    --background: #0A0A0A;
+    --foreground: #E0E0E0;
+    --primary: #A259FF;
+    --secondary: #4FC3F7;
+    --border: #222;
+    --font-sans: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+
 html, body {
     height: 100%;
     width: 100%;
-    overflow: hidden; /* Prevent scrolling if canvas causes it */
+    /* overflow-y: auto;  Allow scrolling for the entire page if content overflows */
+    margin: 0;
+    padding: 0;
 }
 
 body {
@@ -19,15 +31,14 @@ body {
     color: var(--foreground);
     font-family: var(--font-sans);
     line-height: 1.6;
-    margin: 0;
-    padding: 0;
-    display: flex;
+    /* Removed flex properties that prevent natural scrolling behavior */
+    /* display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: center; */
     min-height: 100vh;
     text-align: center;
-    position: relative; /* Needed for z-index to work correctly with canvas */
+    position: relative; 
     z-index: 1; /* Ensure body content is above canvas */
 }
 
@@ -38,7 +49,7 @@ body {
     width: 100%;
     height: 100%;
     z-index: -1; /* Place behind other content */
-    display: block; /* Remove any default canvas margins/paddings */
+    display: block; 
 }
 
 .floating-header {
@@ -53,13 +64,17 @@ body {
     color: var(--secondary);
     backdrop-filter: blur(5px);
     z-index: 1000;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 main {
     max-width: 800px;
-    padding: 4rem 1rem 2rem;
+    margin: 0 auto; /* Center the main content */
+    padding: 4rem 1rem 10rem; /* Increased padding-bottom to allow scrolling past last element */
     position: relative; /* Ensure main content is above the canvas */
     z-index: 2;
+    box-sizing: border-box; /* Include padding in width/height calculation */
 }
 
 section {
@@ -75,12 +90,14 @@ section {
     margin-top: 2rem;
     width: 100%;
     box-sizing: border-box;
+    text-align: left; /* Align text within chat container to left */
 }
 
 #ai-chat h2 {
     font-family: var(--font-mono);
     color: var(--primary);
     margin-bottom: 1rem;
+    text-align: center; /* Center the heading */
 }
 
 .chat-container {
@@ -101,6 +118,11 @@ section {
     font-family: var(--font-mono);
     font-size: 0.9rem;
     color: var(--foreground);
+    line-height: 1.4;
+}
+
+#chat-output p {
+    margin: 0.2em 0;
 }
 
 #ai-input {
@@ -129,12 +151,125 @@ section {
     font-family: var(--font-mono);
     font-size: 1rem;
     transition: background-color 0.3s ease;
+    align-self: flex-end; /* Align button to the right within chat-container */
 }
 
 #ai-send-btn:hover {
     background-color: #8c47e8; /* A slightly darker primary */
 }
 /* End Arcana AI Chat Section Styling */
+
+#hero .title {
+    font-family: var(--font-mono);
+    font-size: 5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0;
+    letter-spacing: -2px;
+}
+
+#hero .subtitle {
+    font-size: 1.25rem;
+    color: var(--foreground);
+    margin: 0.5rem 0 1.5rem;
+}
+
+.typing-container {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    color: var(--secondary);
+    min-height: 1.5em;
+}
+
+.cursor {
+    display: inline-block;
+    width: 10px;
+    height: 1.2em;
+    background-color: var(--secondary);
+    animation: blink 0.7s infinite;
+    vertical-align: middle;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+#bio p {
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.card-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.card {
+    background-color: #000;
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    border-radius: 8px;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+}
+
+.card h3 {
+    font-family: var(--font-mono);
+    color: var(--primary);
+    margin: 0 0 0.5rem;
+}
+
+.card p {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.btn-link {
+    font-family: var(--font-mono);
+    color: var(--secondary);
+    text-decoration: none;
+    border: 1px solid var(--secondary);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.btn-link:hover {
+    background-color: var(--secondary);
+    color: var(--background);
+}
+
+#contact h2 {
+    font-family: var(--font-mono);
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+#contact a {
+    color: var(--secondary);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+#contact a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    #hero .title {
+        font-size: 4rem;
+    }
+    .floating-header {
+        font-size: 0.8rem;
+    }
+}
 
 #hero .title {
     font-family: var(--font-mono);

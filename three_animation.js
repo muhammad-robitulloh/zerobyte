@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const globeRadius = 5; // Define a radius for the globe
 
-    camera.position.set(0, 0, globeRadius * 3); // Adjust camera position for the globe
+    camera.position.set(0, 7, globeRadius * 2.5); // Adjusted camera position: higher Y, slightly closer Z
     camera.lookAt(0, 0, 0);
 
     // Function to convert lat/lon to 3D Cartesian coordinates
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Create PointsMaterial for glowing dots
             const material = new THREE.PointsMaterial({
                 color: new THREE.Color(0x4FC3F7), // Secondary color from CSS
-                size: 0.05,
+                size: 0.08, // Slightly increased dot size
                 transparent: true,
                 blending: THREE.AdditiveBlending // For glowing effect
             });
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Add rotation to the world map
             gsap.to(worldMap.rotation, {
-                duration: 200,
+                duration: 400, // Slowed down rotation
                 y: Math.PI * 2,
                 repeat: -1,
                 ease: "none"
@@ -217,9 +217,9 @@ document.addEventListener('DOMContentLoaded', () => {
             vUv = uv;
             vec3 newPosition = position;
 
-            // Simple wave effect for the grid
-            newPosition.z += sin(newPosition.x * 0.5 + uTime * 0.5) * 0.5;
-            newPosition.y += cos(newPosition.z * 0.5 + uTime * 0.5) * 0.5;
+            // Simple wave effect for the grid (reduced multipliers for less "strangeness")
+            newPosition.z += sin(newPosition.x * 0.5 + uTime * 0.5) * 0.2; // Was 0.5
+            newPosition.y += cos(newPosition.z * 0.5 + uTime * 0.5) * 0.2; // Was 0.5
 
             vPosition = newPosition;
             gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
@@ -267,6 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const grid = new THREE.Mesh(geometry, material);
     grid.rotation.x = Math.PI / 2; // Rotate to lie on the XZ plane
+    grid.position.y = -2; // Move grid down slightly
     scene.add(grid);
 
     // Call loadWorldMap
