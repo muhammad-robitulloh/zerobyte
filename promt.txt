@@ -1,0 +1,74 @@
+You are an autonomous coding agent. 
+Your task: Build and deploy the full “zerobyte.sh” website to GitHub Pages automatically.
+Act as a senior full-stack engineer. Execute everything using shell commands and write all required files.
+
+=====================
+PROJECT DESCRIPTION
+=====================
+• Brand name: zerobyte.sh
+• Theme: dark, hacker-aesthetic, elegant minimalism
+• Core concept: “0 byte / empty state / void meets computation”
+• Persona: digital craftsman, system tinkerer, backend + AI research vibe
+• Goal of the site: personal landing page + portfolio gateway + contact hub
+
+=====================
+REQUIREMENTS
+=====================
+1. Create a complete website with:
+   - index.html
+   - styles.css
+   - script.js (minimal)
+   - favicon (generated via SVG)
+   - /assets folder (for future expansion)
+
+2. Design language:
+   - Dark mode only
+   - Black (#000), charcoal (#0A0A0A), purple neon (#A259FF), cyan accent (#4FC3F7)
+   - Typography: JetBrains Mono, Inter
+   - Style: terminal chic + modern flat aesthetic
+   - Include a floating terminal-style header with the text:
+         zerobyte.sh — where the void computes itself.
+
+3. Content layout:
+   - Section 1: Hero title “0BYTE”
+   - Subtitle: “Minimal presence. Maximum intent.”
+   - Animated typing effect showing:
+         `systems / ai / automation / devtools`
+   - Section 2: Short bio (simple, clean, no cringe):
+         “I build lightweight systems, explore digital primitives, 
+          and craft tools that reshape how people think and work.”
+   - Section 3: Portfolio slots (3 cards, placeholder links)
+   - Section 4: Contact:
+         Instagram @zerobyte.sh
+         Email link: mailto:zerobyte.dev@gmail.com
+
+4. Include this special SVG logo:
+   - Circular glyph.
+   - Inside: number “0”.
+   - Below the circle: a tiny “.sh”.
+   - Minimal, geometric, mono-stroke.
+
+5. The site must be responsive and extremely lightweight (<50KB total).
+
+6. After generating files, execute:
+   - git init
+   - git add .
+   - git commit -m "init zerobyte.sh site"
+   - create branch `main`
+   - git remote add origin https://github.com/muhammad-robitulloh/zerobyte.git
+   - git push -u origin main
+
+7. Enable GitHub Pages:
+   - Source: main branch → / (root)
+   - Output final URL after deployment.
+
+=====================
+DELIVERABLE FORMAT
+=====================
+1. First: generate all project files with `---- file start ----` blocks.
+2. Second: print EXACT terminal commands to create these files in my environment.
+3. Third: ask me for my GitHub repo URL to complete deployment steps.
+4. Fourth: after I provide URL, proceed with the git steps + GitHub Pages setup.
+
+=====================
+BEGIN NOW.
